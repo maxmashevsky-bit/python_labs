@@ -1,0 +1,466 @@
+<!-- lab05/web/index.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Converter - Конвертер файлов</title>
+    <style>
+        :root {
+            --primary-purple: #8a2be2;
+            --secondary-purple: #9370db;
+            --light-purple: #e6e6fa;
+            --dark-purple: #4b0082;
+            --accent-purple: #6a0dad;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f0e6ff, #e6e6fa);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(138, 43, 226, 0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary-purple), var(--dark-purple));
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .conversion-section {
+            padding: 30px;
+        }
+        
+        .section-title {
+            color: var(--dark-purple);
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            border-bottom: 2px solid var(--light-purple);
+            padding-bottom: 10px;
+        }
+        
+        .conversion-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .conv-btn {
+            background: var(--secondary-purple);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .conv-btn:hover {
+            background: var(--primary-purple);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(138, 43, 226, 0.3);
+        }
+        
+        .conv-btn.active {
+            background: var(--dark-purple);
+            box-shadow: 0 0 0 3px var(--light-purple);
+        }
+        
+        .file-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .file-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .file-group label {
+            color: var(--dark-purple);
+            font-weight: bold;
+        }
+        
+        .file-input-row {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .file-input-row input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--light-purple);
+            border-radius: 8px;
+            font-size: 1em;
+        }
+        
+        .file-input-row input:focus {
+            outline: none;
+            border-color: var(--secondary-purple);
+        }
+        
+        .browse-btn {
+            background: var(--secondary-purple);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .browse-btn:hover {
+            background: var(--primary-purple);
+        }
+        
+        .convert-btn {
+            background: linear-gradient(135deg, var(--primary-purple), var(--dark-purple));
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            width: 100%;
+        }
+        
+        .convert-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(138, 43, 226, 0.4);
+        }
+        
+        .convert-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .status.ready {
+            background: var(--light-purple);
+            color: var(--dark-purple);
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .file-upload {
+            background: var(--light-purple);
+            border: 2px dashed var(--secondary-purple);
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .file-upload:hover {
+            background: #e0d6ff;
+            border-color: var(--primary-purple);
+        }
+        
+        .file-upload i {
+            font-size: 3em;
+            color: var(--secondary-purple);
+            margin-bottom: 10px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📁 Конвертер файлов</h1>
+            <p>Простой и удобный инструмент для конвертации между форматами</p>
+        </div>
+        
+        <div class="conversion-section">
+            <div class="section-title">Выберите тип конвертации</div>
+            
+            <div class="conversion-buttons">
+                <button class="conv-btn" onclick="selectConversion('json_to_csv')">JSON → CSV</button>
+                <button class="conv-btn" onclick="selectConversion('csv_to_json')">CSV → JSON</button>
+                <button class="conv-btn" onclick="selectConversion('csv_to_xlsx')">CSV → XLSX</button>
+                <button class="conv-btn" onclick="selectConversion('xlsx_to_csv')">XLSX → CSV</button>
+            </div>
+            
+            <div class="file-upload" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                <div>📤</div>
+                <h3>Нажмите для загрузки файла или перетащите его сюда</h3>
+                <p>Поддерживаемые форматы: JSON, CSV, XLSX</p>
+                <input type="file" id="fileInput" class="hidden" accept=".json,.csv,.xlsx">
+            </div>
+            
+            <div class="file-inputs" id="fileInputs" style="display: none;">
+                <div class="file-group">
+                    <label>Входной файл:</label>
+                    <div class="file-input-row">
+                        <input type="text" id="inputFile" readonly placeholder="Выберите входной файл...">
+                        <button class="browse-btn" onclick="browseInputFile()">Обзор</button>
+                    </div>
+                </div>
+                
+                <div class="file-group">
+                    <label>Выходной файл:</label>
+                    <div class="file-input-row">
+                        <input type="text" id="outputFile" readonly placeholder="Автоматически заполнится...">
+                        <button class="browse-btn" onclick="browseOutputFile()">Обзор</button>
+                    </div>
+                </div>
+                
+                <button class="convert-btn" id="convertBtn" onclick="convertFile()" disabled>
+                    Начать конвертацию
+                </button>
+                
+                <div class="status ready" id="status">
+                    Готов к работе
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentConversion = null;
+        let selectedFile = null;
+        
+        function selectConversion(conversionType) {
+            currentConversion = conversionType;
+            
+            // Сбрасываем активные кнопки
+            document.querySelectorAll('.conv-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Активируем выбранную кнопку
+            event.target.classList.add('active');
+            
+            // Показываем поля ввода
+            document.getElementById('fileInputs').style.display = 'block';
+            document.getElementById('uploadArea').style.display = 'none';
+            
+            updateStatus(`Выбрано: ${getConversionName(conversionType)}`, 'ready');
+            updateConvertButton();
+        }
+        
+        function getConversionName(type) {
+            const names = {
+                'json_to_csv': 'JSON → CSV',
+                'csv_to_json': 'CSV → JSON', 
+                'csv_to_xlsx': 'CSV → XLSX',
+                'xlsx_to_csv': 'XLSX → CSV'
+            };
+            return names[type] || 'Неизвестно';
+        }
+        
+        function browseInputFile() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            
+            // Устанавливаем accept в зависимости от выбранной конвертации
+            if (currentConversion === 'json_to_csv') {
+                input.accept = '.json';
+            } else if (currentConversion === 'csv_to_json' || currentConversion === 'csv_to_xlsx') {
+                input.accept = '.csv';
+            } else if (currentConversion === 'xlsx_to_csv') {
+                input.accept = '.xlsx';
+            }
+            
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    selectedFile = file;
+                    document.getElementById('inputFile').value = file.name;
+                    autoFillOutputFile(file.name);
+                    updateConvertButton();
+                }
+            };
+            
+            input.click();
+        }
+        
+        function browseOutputFile() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.onchange = function(e) {
+                document.getElementById('outputFile').value = e.target.files[0].name;
+                updateConvertButton();
+            };
+            input.click();
+        }
+        
+        function autoFillOutputFile(inputFilename) {
+            if (!currentConversion || !inputFilename) return;
+            
+            const baseName = inputFilename.replace(/\.[^/.]+$/, "");
+            let outputExtension = '';
+            
+            switch(currentConversion) {
+                case 'json_to_csv':
+                    outputExtension = '.csv';
+                    break;
+                case 'csv_to_json':
+                    outputExtension = '.json';
+                    break;
+                case 'csv_to_xlsx':
+                    outputExtension = '.xlsx';
+                    break;
+                case 'xlsx_to_csv':
+                    outputExtension = '.csv';
+                    break;
+            }
+            
+            document.getElementById('outputFile').value = baseName + outputExtension;
+        }
+        
+        function updateConvertButton() {
+            const inputFile = document.getElementById('inputFile').value;
+            const outputFile = document.getElementById('outputFile').value;
+            const convertBtn = document.getElementById('convertBtn');
+            
+            convertBtn.disabled = !(currentConversion && inputFile && outputFile);
+        }
+        
+        function updateStatus(message, type = 'ready') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+        
+        function convertFile() {
+            if (!currentConversion) {
+                updateStatus('Ошибка: выберите тип конвертации', 'error');
+                return;
+            }
+            
+            const inputFile = document.getElementById('inputFile').value;
+            const outputFile = document.getElementById('outputFile').value;
+            
+            if (!inputFile || !outputFile) {
+                updateStatus('Ошибка: укажите оба файла', 'error');
+                return;
+            }
+            
+            // Имитация конвертации (в реальном приложении здесь был бы AJAX запрос)
+            updateStatus('Конвертация...', 'ready');
+            
+            setTimeout(() => {
+                updateStatus(`Конвертация завершена! ${inputFile} → ${outputFile}`, 'success');
+                
+                // Создаем ссылку для скачивания (в реальном приложении это был бы реальный файл)
+                const convertBtn = document.getElementById('convertBtn');
+                convertBtn.textContent = 'Скачать результат';
+                convertBtn.onclick = function() {
+                    alert('В реальном приложении здесь было бы скачивание файла');
+                    // Сброс интерфейса
+                    resetInterface();
+                };
+            }, 2000);
+        }
+        
+        function resetInterface() {
+            document.getElementById('inputFile').value = '';
+            document.getElementById('outputFile').value = '';
+            document.getElementById('convertBtn').textContent = 'Начать конвертацию';
+            document.getElementById('convertBtn').onclick = convertFile;
+            updateStatus('Готов к работе', 'ready');
+        }
+        
+        // Обработка drag and drop
+        const uploadArea = document.getElementById('uploadArea');
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.background = '#e0d6ff';
+            uploadArea.style.borderColor = 'var(--primary-purple)';
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.background = 'var(--light-purple)';
+            uploadArea.style.borderColor = 'var(--secondary-purple)';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.background = 'var(--light-purple)';
+            uploadArea.style.borderColor = 'var(--secondary-purple)';
+            
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                selectedFile = file;
+                document.getElementById('inputFile').value = file.name;
+                autoFillOutputFile(file.name);
+                updateConvertButton();
+                
+                // Показываем поля ввода
+                document.getElementById('fileInputs').style.display = 'block';
+                document.getElementById('uploadArea').style.display = 'none';
+            }
+        });
+        
+        // Обработка выбора файла через input
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                selectedFile = file;
+                document.getElementById('inputFile').value = file.name;
+                autoFillOutputFile(file.name);
+                updateConvertButton();
+                
+                // Показываем поля ввода
+                document.getElementById('fileInputs').style.display = 'block';
+                document.getElementById('uploadArea').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
