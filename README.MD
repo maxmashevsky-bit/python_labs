@@ -1,353 +1,246 @@
 <h1>Python_Labs</h1>
 
-# Лабораторная работа 1
-### Задание 1:
 
-Программа выводит простое приветствие в консоль.
+
+# Лабораторная работа 5
+### csv_xlsx.py
 ```python
-name = input()
-age =int(input())
-age1 = age +1
-print('Имя:',name)
-print('Возраст:',age)
-print(f'Привет, {name}! Через год тебе будет {age1} лет.')
-```
-Результат выполнения:
+import csv
+import os
+import openpyxl
 
-![1.jpg](misc/img/lab01/1.jpg)
+def validate_extension(path, ext):
+    if not path.lower().endswith(ext.lower()):
+        raise ValueError(f"Неверный формат: {path}. Ожидается {ext}")
 
-### Задание 2: 
-
-```python
-a = (input("a: ")).replace(",",".")
-b = (input("b: ")).replace(",",".")
-print(f"sum={round(float(a)+float(b), 2)}; avg={round((float(a)+float(b))/2, 2)}")
-```
-Результат выполнения:
-
-![2.png](misc/img/lab01/2.png)
-
-### Задание 3: 
-```python
-
-price = int(input())
-discount = int(input())
-vat = int(input())
-base = price * (1 - discount/100)
-vat_amount = base * (vat/100)
-total = base + vat_amount
-print(f"База после скидки: {base:.2f} ₽")
-print(f"НДС:               {vat_amount:.2f} ₽")
-print(f"Итого к оплате:    {total:.2f} ₽")
-```
-Результат выполнения:
-
-![3.jpg](misc/img/lab01/3.jpg)
-
-### Задание 4: 
-```python
-
-m = int(input())
-h = m//60
-print(f"{h}:{(m-60*h):02d}")
-```
-Результат выполнения:
-
-![4.png](misc/img/lab01/4.png)
-
-### Задание 5:
-```python
-f = input("ФИО: ")
-fio = f.strip()
-c = fio.split()
-с1 =  sum(len(w) for w in c)
-i = "".join(p[0].upper() for p in c) + "."
-print("Инициалы:", i)
-print("Длина (символов):",с1+2)
-```
-Результат выполнения:
-
-![5.jpg](misc/img/lab01/5.jpg)
-
-# Лабораторная работа 2
-### Задание 1:
-
-```python
-def mnmx(nums: list[float | int]):
-    if not nums:  
-        print('Value Error')
-        return None  
-    mn = min(nums)
-    mx = max(nums)
-    return (mn, mx)
+def csv_to_xlsx(csv_path, xlsx_path):
+    validate_extension(csv_path, '.csv')
+    validate_extension(xlsx_path, '.xlsx')
+    if not os.path.exists(csv_path): raise FileNotFoundError(f"CSV не найден: {csv_path}")
     
-def unique_sorted (nums: list[float | int]):
-    return list( sorted( set(nums)))
+    with open(csv_path, 'r', encoding='utf-8') as f:
+        data = list(csv.reader(f))
+        if not data: raise ValueError("CSV файл пуст")
+    
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    for row_idx, row in enumerate(data, 1):
+        for col_idx, value in enumerate(row, 1):
+            ws.cell(row=row_idx, column=col_idx, value=value)
+    
+    os.makedirs(os.path.dirname(xlsx_path), exist_ok=True)
+    wb.save(xlsx_path)
+    print(f"CSV -> XLSX: {xlsx_path}")
 
-def flatten(mat: list[list | tuple]):
-    flattened_list = []
-    for row in mat:
-        if isinstance(row, (list, tuple)):
-            flattened_list.extend(row)
-        else:
-            raise TypeError
-    return flattened_list
+def xlsx_to_csv(xlsx_path, csv_path):
+    validate_extension(xlsx_path, '.xlsx')
+    validate_extension(csv_path, '.csv')
+    if not os.path.exists(xlsx_path): raise FileNotFoundError(f"XLSX не найден: {xlsx_path}")
+    
+    wb = openpyxl.load_workbook(xlsx_path)
+    ws = wb.active
+    if ws.max_row == 0 or ws.max_column == 0: raise ValueError("XLSX файл пуст")
+    
+    os.makedirs(os.path.dirname(csv_path), exist_ok=True)
+    with open(csv_path, 'w', newline='', encoding='utf-8') as f:
+        csv.writer(f).writerows([cell if cell is not None else '' for cell in row] for row in ws.iter_rows(values_only=True) if any(cell is not None for cell in row))
+    
+    print(f"XLSX -> CSV: {csv_path}")
 ```
-Результат выполнения:
 
-![image1.png](misc/img/lab02/image1.png)
-
-### Задание 2:
+### json_csv.py
 ```python
-def transpose(mat: list[list[float | int]]):
-    if not mat:
-        return []
-    rows = len(mat)
-    cols = len(mat[0])
-    for row in mat:
-        if len(row)!=cols:
-            raise ValueError
-    teleport_mat = [[mat[i][j] for i in range(rows)] for j in range(cols)]
-    return teleport_mat
-print(transpose([[1, 2, 3]]))
-print(transpose([[1],[2], [3]]))
-print(transpose([[1,2],[3,4]]))
-print(transpose([[1,2],[3]]))
-print(transpose([[]]))
-
-def row_sums(mat: list[list[float | int]]):
-    if not mat:
-        return []
-    rows = len(mat)
-    cols = len(mat[0])
-    for row in mat:
-        if len(row) != cols:
-            raise ValueError
-    sums=[sum(row) for row in mat]
-    return sums
-print(row_sums([[1,2,3], [4,5,6]]))
-print(row_sums([[-1, 1], [10, -10]]))
-print(row_sums([[0,0], [0,0]]))
-print(row_sums([[1,2], [3]])) 
-
-def col_sums(mat: list[list[float | int]]):
-    if not mat:
-        return []
-    rows = len(mat)
-    cols = len(mat[0])
-    for row in mat:
-        if len(row) != cols:
-            raise ValueError     
-    sums = []
-    for j in range(cols):
-        column_sum = 0
-        for i in range(rows):
-            column_sum += mat[i][j]
-        sums.append(column_sum)    
-    return sums
-
-print(col_sums([[1, 2, 3], [4, 5, 6]]))  
-print(col_sums([[-1, 1], [10, -10]]))    
-print(col_sums([[0, 0], [0, 0]]))        
-print(col_sums([[1, 2], [3]]))  
-```
-Результат выполнения:
-
-![imagge2.1.jpg](misc/img/lab02/imagge2.1.jpg)
-![imagge2.2.jpg](misc/img/lab02/imagge2.2.jpg)
-![imagge2.3.jpg](misc/img/lab02/imagge2.3.jpg)
-
-
-### Задание 3:
-```python
-def format_record(rec: tuple[str, str, float]):
-    if not isinstance(rec, tuple):
-        raise TypeError(f"Ожидается tuple, получен {type(rec).__name__}")
-    if len(rec) != 3:
-        raise ValueError(f"Ожидается кортеж из 3 элементов, получено {len(rec)}")
-    fio, group, gpa = rec
-    if not isinstance(fio, str):
-        raise TypeError(f"ФИО должен быть строкой, получен {type(fio).__name__}")
-    if not isinstance(group, str):
-        raise TypeError(f"Группа должна быть строкой, получен {type(group).__name__}")
-    if not isinstance(gpa, (int, float)):
-        raise TypeError(f"GPA должен быть числом, получен {type(gpa).__name__}")
-    if gpa < 0 or gpa > 5:
-        raise ValueError(f"GPA должен быть в диапазоне от 0 до 5, получено {gpa}")
-    parts = fio.strip().split()
-    family = parts[0]
-    initials = ""
-    for part in parts[1:]:
-        initials += part[0].upper() + "."
-    if not initials:
-        initials = ""
-    form_gpa = f"{gpa:.2f}"
-    return f"{family} {initials}, гр. {group}, GPA {form_gpa}"
-
-print(format_record(("Иванов Иван Иванович", "BIVT-25", 4.6)))
-print(format_record(("Петров Пётр", "IKBO-12", 5.0)))
-print(format_record(("Петров Пётр Петрович", "IKBO-12", 5.0)))
-print(format_record(("  сидорова  анна   сергеевна ", "ABB-01", 3.999)))
-```
-Результат выполнения:
-
-![image3.jpg](misc/img/lab02/image3.jpg)
-
-# Лабораторная работа 3
-### Задание 1:
-```python
-import re
-def normalize(text: str, *, casefold: bool = True, yo2e: bool = True) -> str:
-    result = text
-    if casefold == True:
-        result = result.casefold()    
-    if yo2e == True:
-        result = result.replace('ё', 'е').replace('Ё', 'е')
-    for char in ['\t', '\r', '\n']:
-        result = result.replace(char, ' ')
-    result = re.sub(r'\s+', ' ', result).strip()
-    return result
-
-def tokenize(text: str) -> list[str]:
-    pattern = r'\w+(?:-\w+)*'
-    tokens = re.findall(pattern, text)
-    return tokens
-
-def count_freq(tokens: list[str]) -> dict[str, int]:
-    frequency_dict = {}
-    for token in tokens:
-        frequency_dict[token] = frequency_dict.get(token, 0) + 1
-    return frequency_dict
-
-def top_n(freq: dict[str, int], n: int = 5) -> list[tuple[str, int]]:
-    items = list(freq.items())
-    sorted_items = sorted(items, key=lambda x: (-x[1], x[0]))
-    return sorted_items[:n]
-
-# print(normalize("ПрИвЕт\nМИр\t"))
-# print(normalize("ёжик, Ёлка")) 
-# print(normalize("Hello\r\nWorld"))
-# print(normalize("  двойные   пробелы  "))
-
-# print(tokenize("привет мир" ))
-# print(tokenize("hello,world!!!"))
-# print(tokenize("по-настоящему круто"))
-# print(tokenize("2025 год" ))
-# print(tokenize("emoji 😀 не слово" ))
-
-# print(count_freq(["a","b","a","c","b","a"]))
-# print(count_freq(["bb", "aa", "bb", "aa", "cc"]))
-
-# freq1 = {"a": 3, "b": 2, "c": 1}
-# print(top_n(freq1, 2))
-# freq2 = {"bb": 2, "aa": 2, "cc": 1}
-# print(top_n(freq2, 2))
-```
-Результат выполнения:
-
-![001.jpg](misc/img/lab03/001.jpg)
-### Задание 2:
-```python
+from pathlib import Path
+import json
+import csv
 import sys
 import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '../lib'))
+from io_helpers import read_file, write_file, get_file_extension
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+def validate_extension(path: str, expected_ext: str) -> None:
 
-from lib.pt1 import normalize, tokenize, count_freq, top_n
+    actual_ext = get_file_extension(path)
+    if actual_ext != expected_ext.lower():
+        raise ValueError(f"Неверный формат: {path}. Ожидается {expected_ext}")
+
+def json_to_csv(json_path: str, csv_path: str) -> None:
+
+    validate_extension(json_path, '.json')
+    validate_extension(csv_path, '.csv')
+    json_content = read_file(json_path)
+    data = json.loads(json_content)
+    
+    if not data:
+        raise ValueError("JSON файл пуст")
+    
+    fieldnames = list(data[0].keys())
+    csv_content = []   
+    csv_content.append(','.join(fieldnames))
+
+    for item in data:
+        row = [str(item.get(field, '')) for field in fieldnames]
+        csv_content.append(','.join(row))
+    write_file(csv_path, '\n'.join(csv_content))
+    print(f"JSON -> CSV завершено: {csv_path}")
+
+
+def csv_to_json(csv_path: str, json_path: str) -> None:
+    validate_extension(csv_path, '.csv')
+    validate_extension(json_path, '.json')
+    csv_content = read_file(csv_path)
+    from io import StringIO
+    csv_file = StringIO(csv_content)
+    data = list(csv.DictReader(csv_file))
+    
+    if not data:
+        raise ValueError("CSV файл пуст")
+    json_content = json.dumps(data, indent=2, ensure_ascii=False)
+    write_file(json_path, json_content)
+    
+    print(f"CSV -> JSON завершено: {json_path}")
+```
+
+### csv_xlsx.py
+```python
+from json_csv import json_to_csv, csv_to_json
+from csv_xlsx import csv_to_xlsx, xlsx_to_csv
+import os
+import sys
+
+
+def validate_paths(in_path: str, out_path: str) -> None:
+    if os.path.abspath(in_path) == os.path.abspath(out_path):
+        raise ValueError("Нельзя конвертировать файл в самого себя!")
+    
+    in_ext = os.path.splitext(in_path)[1].lower()
+    out_ext = os.path.splitext(out_path)[1].lower()
+    
+    if in_ext == out_ext:
+        raise ValueError(
+            f"Нельзя конвертировать {in_ext} в {out_ext} - одинаковые форматы!"
+        )
+
+
+def convert_json_csv() -> None:
+    """ JSON в CSV"""
+    validate_paths(base + 'people.json', out + 'people.csv')
+    json_to_csv(base + 'people.json', out + 'people.csv')
+
+
+def convert_csv_json() -> None:
+    """ CSV в JSON"""
+    validate_paths(base + 'people.csv', out + 'people.json')
+    csv_to_json(base + 'people.csv', out + 'people.json')
+
+
+def convert_csv_xlsx() -> None:
+    """ CSV в XLSX"""
+    validate_paths(base + 'cities.csv', out + 'cities.xlsx')
+    csv_to_xlsx(base + 'cities.csv', out + 'cities.xlsx')
+
+
+def convert_xlsx_csv() -> None:
+    """ XLSX в CSV"""
+    validate_paths(base + 'cities.xlsx', out + 'cities.csv')
+    xlsx_to_csv(base + 'cities.xlsx', out + 'cities.csv')
+
+
+def display_menu() -> None:
+    """Отображает главное меню программы"""
+    print("\n" + "="*50)
+    print("Конвертер файлов)".center(50))
+    print("="*50)
+    print("1. JSON → CSV")
+    print("2. CSV → JSON")
+    print("3. CSV → XLSX")
+    print("4. XLSX → CSV")
+    print("5. Выход")
+    print("="*50)
+
+
+def get_user_choice() -> str:
+    """Безопасно получает выбор пользователя"""
+    try:
+        choice = input("Выберите действие (1-5): ").strip()
+        return choice
+    except KeyboardInterrupt:
+        print("\n\nПрограмма прервана пользователем. До свидания!")
+        sys.exit(0)
+    except EOFError:
+        print("\n\nНеожиданный конец ввода. До свидания!")
+        sys.exit(1)
+
 
 def main() -> None:
-    text = sys.stdin.read().strip()
-
-    norm = normalize(text)
-    tokens = tokenize(norm)
-    freq = count_freq(tokens)
-
-    print(f"Всего слов: {len(tokens)}")
-    print(f"Уникальных слов: {len(freq)}")
-    print("Топ-5:")
-    for word, count in top_n(freq, 5):
-        print(f"{word}:{count}")
-
-if __name__ == "__main__":
-    main()
-
-"""
-1. Сначала вставляешь в терминал  python3 src/lab03/text_stats.py
-2. Затем втсавляешь текст, то есть Привет, мир! Привет!!!
-3. Потом клавишами CTRL+D
-"""
-```
-Результат выполнения:
-![002.jpg](misc/img/lab03/002.jpg)
-
-# Лабораторная работа 4
-### Задание A:
-### io_txt_csv
-```python
-from csv import writer
-from pathlib import Path
-
-def read_text(path: str, encoding: str = "utf-8") -> str:
-    return Path(path).read_text(encoding=encoding)
-
-def write_csv(rows: list, path: str, header: tuple = None) -> None:
-    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    """Основная функция программы"""
     
-    with open(path, 'w', newline='', encoding='utf-8') as f:
-        w = writer(f)
-        if header:
-            w.writerow(header)
-        w.writerows(rows)
-```
+    # Глобальные переменные для путей
+    global base, out
+    base = 'src/data/samples/'
+    out = 'src/data/out/'
 
-### Задание B
-### text_report
-```python
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from lab04.io_txt_csv import read_text, write_csv
-from lib.pt1 import normalize, tokenize, count_freq, top_n
-
-def validate_output_file(filename):
-    path = Path(filename)
-    if path.suffix.lower() != '.csv':
-        raise ValueError()
-
-def main():
-    input_file = "src/data/lab04/input.txt"  
-    output_file = "src/data/lab04/report.csv"  
-    
     try:
-        # Проверка типа выходного файла
-        validate_output_file(output_file)
-        
-        text = read_text(input_file)
-        freq = count_freq(tokenize(normalize(text)))
-        write_csv(sorted(freq.items(), key=lambda x: (-x[1], x[0])), 
-                 output_file, header=("word", "count"))
-        
-        print(f"✓ Отчёт сохранён: {output_file}")
-        print(f"Всего слов: {sum(freq.values())}")
-        print(f"Уникальных слов: {len(freq)}")
-        print("Топ-5:", *[f"{w}:{c}" for w, c in top_n(freq, 5)])
-        
-    except FileNotFoundError:
-        print(f"✗ Файл {input_file} не найден")
-        sys.exit(1)
-    except ValueError as e:
-        print(f"✗ Ошибка валидации: {e}")
-        sys.exit(1)
+        while True:
+            display_menu()
+            choice = get_user_choice()
+
+            if choice == '5':
+                print("До свидания!")
+                break
+
+            try:
+                if choice == '1':
+                    convert_json_csv()
+                    print("✅ Конвертация JSON → CSV завершена успешно!")
+                    
+                elif choice == '2':
+                    convert_csv_json()
+                    print("✅ Конвертация CSV → JSON завершена успешно!")
+                    
+                elif choice == '3':
+                    convert_csv_xlsx()
+                    print("✅ Конвертация CSV → XLSX завершена успешно!")
+                    
+                elif choice == '4':
+                    convert_xlsx_csv()
+                    print("✅ Конвертация XLSX → CSV завершена успешно!")
+                    
+                else:
+                    print("❌ Неверный выбор! Введите цифру от 1 до 5")
+                    
+            except FileNotFoundError as e:
+                print(f"❌ Файл не найден: {e}")
+                
+            except ValueError as e:
+                print(f"❌ Ошибка валидации: {e}")
+                
+            except Exception as e:
+                print(f"❌ Неожиданная ошибка: {e}")
+
+            # Пауза перед следующим выбором
+            if choice in ['1', '2', '3', '4']:
+                input("\nНажмите Enter для продолжения...")
+
+    except KeyboardInterrupt:
+        print("\n\nПрограмма завершена. До свидания!")
     except Exception as e:
-        print(f"✗ Ошибка: {e}")
-        sys.exit(1)
+        print(f"\nКритическая ошибка: {e}")
+
 
 if __name__ == "__main__":
     main()
 ```
-Результат выполнения:
-
-![001.jpg](misc/img/lab04/001.jpg)
-![002.jpg](misc/img/lab04/002.jpg)
+![image1.jpg](misc/img/lab05/image1.jpg)
+### Полученный файл
+![cities_csv_1.png](misc/img/lab05/cities_csv_1.png)
+### Полученный файл
+![cities_xlsx_1.png](misc/img/lab05/cities_xlsx_1.png)
+### Полученный файл
+![people_csv_1.png](misc/img/lab05/people_csv_1.png)
+### Полученный файл
+![people_json_1.png](misc/img/lab05/people_json_1.png)
+### Итог:
+![itog.jpg](misc/img/lab05/itog.jpg)
+### WEB
+![image2.jpg](misc/img/lab05/image2.jpg)
