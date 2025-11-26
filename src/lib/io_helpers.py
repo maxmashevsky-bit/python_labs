@@ -10,8 +10,8 @@ def read_file(file_path: str, encoding: str = "utf-8") -> str:
     path = Path(file_path)
     if not path.exists():
         raise FileNotFoundError(f"Файл не найден: {file_path}")
-    
-    with path.open('r', encoding=encoding) as f:
+
+    with path.open("r", encoding=encoding) as f:
         return f.read()
 
 
@@ -21,8 +21,8 @@ def write_file(file_path: str, content: str, encoding: str = "utf-8") -> None:
     """
     path = Path(file_path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    
-    with path.open('w', encoding=encoding) as f:
+
+    with path.open("w", encoding=encoding) as f:
         f.write(content)
 
 

@@ -1,6 +1,6 @@
-price = float(input("Введите цену: ").replace(',', '.'))
-discount = float(input("Введите скидку: ").replace(',', '.'))
-vat = float(input("Введите НДС: ").replace(',', '.'))
+price = float(input("Введите цену: ").replace(",", "."))
+discount = float(input("Введите скидку: ").replace(",", "."))
+vat = float(input("Введите НДС: ").replace(",", "."))
 
 base = price * (1 - discount / 100)
 vat_amount = base * (vat / 100)
